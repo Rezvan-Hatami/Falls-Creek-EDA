@@ -150,15 +150,15 @@ max_temp_year1 <- max_temp_year %>%
   mutate(Day = Day - 1)
 
 df1 <- inner_join(max_temp_year1, min_temp_year, by = c("Year", "Month", "Day"))  
-y1 <- df1$Max_tem
-x1 <- df1$Min_tem
-m1 <- lm(Max_tem ~ Min_tem, data = df1)
+y <- df1$Max_tem
+x <- df1$Min_tem
+m <- lm(Max_tem ~ Min_tem, data = df1)
 
 #pdf(here::here("results/overal_correlation_max_before.pdf"))
 tiff(here::here("results//overal_correlation_max_before.jpeg"),width=10,height=10,
      units="in",pointsize = 12,bg ="transparent",res=800,compression="lzw")
 
-p1 <- ggplot(df, aes(x, y))+
+p1 <- ggplot(df1, aes(x, y))+
   geom_point()+
   geom_smooth(method = "gam", formula = y ~ s(x))+
   ggtitle("The relationship between minimum and previous-day maximum temperature \n
