@@ -22,23 +22,27 @@ max_temp_year$Month <- factor(max_temp_year$Month, levels=c('10','11'),
 
 max_temp_year$Year <-  factor(max_temp_year$Year, levels=c('2015','2016','2017','2018','2019'))
 
-pdf(here::here("results/Max-temp-per-year.pdf"))
+tiff(here::here("results/Max-temp-per-year.jpeg"),width=10,height=14,
+     units="in",pointsize = 12,bg ="transparent",res=800,compression="lzw")
+#pdf(here::here("results/Max.pdf"))
 ggplot(max_temp_year,
        aes(x = Day, y = Max_tem, colour = Month )) +
-  geom_line() + ggtitle("Maximum daily temperature at Falls Creek")+
+  geom_line() + ggtitle("Maximum daily temperature at Falls Creek during October and November of 2015-2019")+
   facet_wrap(~ Year, nrow = 5)+ 
   xlab("Days")+ ylab("Maximum temperature (°C)") +
   guides(color=guide_legend("Months"))
   #geom_text(aes(label = Max_tem))
 dev.off()
 
-pdf(here::here("results/Max-temp-per-Month.pdf"))
+#pdf(here::here("results/Max-temp-per-Month.pdf"))
+tiff(here::here("results/Boxplot-Max-temp-per-year.jpeg"),width=10,height=12,
+     units="in",pointsize = 12,bg ="transparent",res=800,compression="lzw")
 ggplot(max_temp_year,
        aes(x = Month, y = Max_tem, colour = Month)) +
   geom_boxplot(fatten = NULL) +
   stat_summary(fun.y = mean, geom = "errorbar", aes(ymax = ..y.., ymin = ..y..),
                width = 0.75, size = 1, linetype = "solid" )+
-  ggtitle("Boxplot of the maximum temperature at Falls Creek")+
+  ggtitle("Boxplot of the maximum temperature at Falls Creek during October and November of 2015-2019")+
   facet_wrap(~ Year, nrow = 2)+ 
   xlab("Months")+ ylab("Maximum temperature (°C)") +
   guides(color=guide_legend("Months"))+
