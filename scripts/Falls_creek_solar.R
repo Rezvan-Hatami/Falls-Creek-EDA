@@ -119,16 +119,16 @@ dev.off()
 #dev.off()
 
 ## Compare max temperature with minimum of the previous day
-min_temp_year <- min_temp_year %>%
+min_temp_year1 <- min_temp_year %>%
   mutate(Day = Day - 1)
 
-df <- inner_join(min_temp_year, max_temp_year, by = c("Year", "Month", "Day"))  
+df <- inner_join(min_temp_year1, max_temp_year, by = c("Year", "Month", "Day"))  
 y <- df$Max_tem
 x <- df$Min_tem
 m <- lm(Max_tem ~ Min_tem, data = df)
 
-#pdf(here::here("results/overal_correlation_day_before.pdf"))
-tiff(here::here("results//overal_correlation_day_before.jpeg"),width=10,height=10,
+#pdf(here::here("results/overal_correlation_min_before.pdf"))
+tiff(here::here("results//overal_correlation_min_before.jpeg"),width=10,height=10,
      units="in",pointsize = 12,bg ="transparent",res=800,compression="lzw")
 
 p1 <- ggplot(df, aes(x, y))+
@@ -145,4 +145,30 @@ p2 <- p1 + geom_text(aes(label = eq), data = dftext, parse = TRUE)
 p2
 dev.off() 
 
+## Compare min temperature with maximum of the previous day
+max_temp_year1 <- max_temp_year %>%
+  mutate(Day = Day - 1)
+
+df1 <- inner_join(max_temp_year1, min_temp_year, by = c("Year", "Month", "Day"))  
+y1 <- df1$Max_tem
+x1 <- df1$Min_tem
+m1 <- lm(Max_tem ~ Min_tem, data = df1)
+
+#pdf(here::here("results/overal_correlation_max_before.pdf"))
+tiff(here::here("results//overal_correlation_max_before.jpeg"),width=10,height=10,
+     units="in",pointsize = 12,bg ="transparent",res=800,compression="lzw")
+
+p1 <- ggplot(df, aes(x, y))+
+  geom_point()+
+  geom_smooth(method = "gam", formula = y ~ s(x))+
+  ggtitle("The relationship between minimum and previous-day maximum temperature \n
+          at Falls Creek during October and November of 2015-2019")+
+  xlab("Minimum temperature (°C)")+ ylab("Previous-day maximum temperature (°C)")
+
+eq <- substitute(italic(r)^2~"="~r2,
+                 list(r2 = format(summary(m)$r.squared, digits = 2)))
+dftext <- data.frame(x = 11, y = 7, eq = as.character(as.expression(eq)))
+p2 <- p1 + geom_text(aes(label = eq), data = dftext, parse = TRUE)
+p2
+dev.off() 
 
