@@ -8,6 +8,7 @@ library(MASS)
 
 source("scripts/Falls_creek_max_temp.R")
 source("scripts/Falls_creek_min_temp.R")
+source("scripts/Falls_creek_humidity.R")
 
 # Dataset
 Solar_exposure <- read.csv(here::here("data-raw/Solar-exposure.csv"))
@@ -61,22 +62,31 @@ dev.off()
 
 ## Explore potential relationship between solar radiation and temperature
 
-combine <- full_join(min_temp_year, max_temp_year, by = c("Year", "Month", "Day"))
-combine1 <- left_join(combine, Solar_exposure_year, by = c("Year", "Month", "Day"))
-sapply(combine1 , function(x) sum(is.na(x)))
-combine1 <- combine1[complete.cases(combine1), ]
+combine1 <- full_join(min_temp_year, max_temp_year, by = c("Year", "Month", "Day"))
+combine2 <- left_join(combine1, Solar_exposure_year, by = c("Year", "Month", "Day"))
+combine3 <- left_join(combine2, humid_day_ave, by = c("Year", "Month", "Day"))
+
+sapply(combine3 , function(x) sum(is.na(x)))
+combine3 <- combine3[complete.cases(combine3), ]
+
+combine3  <- combine3 %>%
+  rename(Humidity = hum_ave,
+         Solar = solar,
+         Max_temperature = Max_tem,
+         Min_temperature = Min_tem
+  )
 
 png(here::here("results/correlation.png"))
-my_data <- combine1[, c(4,5,6)]
+my_data <- combine3[, c(4,5,6,7)]
 chart.Correlation(my_data, histogram=TRUE, pch=19)
 #pairs.panels(my_data)
 dev.off()
 
 ## Scatterplot (Compare max temperature with minimum temperature)
-df <- combine1 
-y <- combine1$Max_tem
-x <- combine1$Min_tem
-m <- lm(Max_tem ~ Min_tem, data = combine1)
+df <- combine3 
+y <- combine1$Max_temperature
+x <- combine1$Min_temperature
+m <- lm(Max_temperature~Min_temperature, data = combine3)
 
 #pdf(here::here("results/Overal-correlation-max-min.pdf"))
 tiff(here::here("results//Overal-correlation-max-min.jpeg"),width=10,height=10,
@@ -150,8 +160,8 @@ max_temp_year1 <- max_temp_year %>%
   mutate(Day = Day - 1)
 
 df1 <- inner_join(max_temp_year1, min_temp_year, by = c("Year", "Month", "Day"))  
-y <- df1$Max_tem
-x <- df1$Min_tem
+x <- df1$Max_tem
+y <- df1$Min_tem
 m <- lm(Max_tem ~ Min_tem, data = df1)
 
 #pdf(here::here("results/overal_correlation_max_before.pdf"))
@@ -160,14 +170,14 @@ tiff(here::here("results//overal_correlation_max_before.jpeg"),width=10,height=1
 
 p1 <- ggplot(df1, aes(x, y))+
   geom_point()+
-  geom_smooth(method = "gam", formula = y ~ s(x))+
+  geom_smooth(method = "lm")+
   ggtitle("The relationship between minimum and previous-day maximum temperature \n
           at Falls Creek during October and November of 2015-2019")+
-  xlab("Minimum temperature (°C)")+ ylab("Previous-day maximum temperature (°C)")
+  xlab("Previous-day maximum temperature (°C)")+ ylab("Minimum temperature (°C)")
 
 eq <- substitute(italic(r)^2~"="~r2,
                  list(r2 = format(summary(m)$r.squared, digits = 2)))
-dftext <- data.frame(x = 11, y = 7, eq = as.character(as.expression(eq)))
+dftext <- data.frame(x = 4, y = 13, eq = as.character(as.expression(eq)))
 p2 <- p1 + geom_text(aes(label = eq), data = dftext, parse = TRUE)
 p2
 dev.off() 
